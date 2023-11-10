@@ -174,24 +174,24 @@ class _SceneNetCustomLoader:
         """
         
         culled_categories = [
-            5 # chair
-            6 # sofa
-            7 # table
-            10 # bookshelf
-            14 # desk
-            15 # shelves
-            17 # dresser
-            20 # floor_mat
-            23 # books
-            24 # refridgerator
-            25 # television
-            26 # paper
-            27 # towel
-            29 # box
-            31 # person
-            37 # bag
-            38 # otherstructure
-            39 # otherfurniture
+            5, # chair
+            6, # sofa
+            7, # table
+            10, # bookshelf
+            14, # desk
+            15, # shelves
+            17, # dresser
+            20, # floor_mat
+            23, # books
+            24, # refridgerator
+            25, # television
+            26, # paper
+            27, # towel
+            29, # box
+            31, # person
+            37, # bag
+            38, # otherstructure
+            39, # otherfurniture
             40 # otherprop
         ]
         
@@ -201,6 +201,9 @@ class _SceneNetCustomLoader:
             category_id = obj.get_cp("category_id")
             
             if category_id in culled_categories:
+                continue
+            
+            if obj.get_name() == 'ceiling':
                 continue
             
             new_objs.append(obj)
