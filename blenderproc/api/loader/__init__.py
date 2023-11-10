@@ -10,6 +10,7 @@ from blenderproc.python.loader.ObjectLoader import load_obj
 from blenderproc.python.loader.Pix3DLoader import load_pix3d
 from blenderproc.python.loader.ReplicaLoader import load_replica, load_replica_segmented_mesh
 from blenderproc.python.loader.SceneNetLoader import load_scenenet
+from blenderproc.python.loader.SceneNetLoaderCustom import load_scenenet_custom, random_sample_materials_for_each_obj
 from blenderproc.python.loader.ShapeNetLoader import load_shapenet
 from blenderproc.python.loader.SuncgLoader import load_suncg
 from blenderproc.python.loader.TextureLoader import load_texture

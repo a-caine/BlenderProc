@@ -48,6 +48,29 @@ def get_camera_pose(frame: Optional[int] = None) -> np.ndarray:
     with KeyFrame(frame):
         return np.array(Entity(bpy.context.scene.camera).get_local2world_mat())
 
+def make_camera_omnidirectional(width: int = None, height: int = None) -> None:
+    """Sets the camera up to render an omnidirectional image with the correct parameters.
+
+    :param width: The width of the render, defaults to None
+    :type width: int, optional
+    :param height: The height of the render, defaults to None
+    :type height: int, optional
+    """
+    
+    # Make the camera omnidirectional
+    
+    cam_ob = bpy.context.scene.camera
+    cam = cam_ob.data
+    
+    cam.type = 'PANO'
+    cam.cycles.panorama_type = 'EQUIRECTANGULAR'
+    
+    # Set resolution
+    if width is not None:
+        bpy.context.scene.render.resolution_x = width
+    if height is not None:
+        bpy.context.scene.render.resolution_y = height
+
 
 def get_camera_frustum(clip_start: Optional[float] = None, clip_end: Optional[float] = None,
                        frame: Optional[int] = None) -> np.ndarray:

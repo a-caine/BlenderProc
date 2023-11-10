@@ -12,8 +12,7 @@ from blenderproc.python.types.MeshObjectUtility import MeshObject
 from blenderproc.python.loader.ObjectLoader import load_obj
 
 
-def load_scenenet(file_path: str, texture_folder: str, label_mapping: LabelIdMapping,
-                  unknown_texture_folder: Optional[str] = None) -> List[MeshObject]:
+def load_scenenet_custom(file_path: str, label_mapping: LabelIdMapping) -> List[MeshObject]:
     """ Loads all SceneNet objects at the given "file_path".
 
     The textures for each object are sampled based on the name of the object, if the name is not represented in the
@@ -26,31 +25,40 @@ def load_scenenet(file_path: str, texture_folder: str, label_mapping: LabelIdMap
 
     :param file_path: The path to the .obj file from SceneNet.
     :param label_mapping: A dict which maps the names of the objects to ids.
-    :param texture_folder: The path to the texture folder used to sample the textures.
-    :param unknown_texture_folder: The path to the textures, which are used if the texture type is unknown.
-                                   The default path does not exist if the dataset was just downloaded, it has to
-                                   be created manually.
     :return: The list of loaded mesh objects.
     """
-    if unknown_texture_folder is None:
-        unknown_texture_folder = os.path.join(texture_folder, "unknown")
 
     # blender search the whole root directory recursively!
     loaded_objects = load_obj(filepath=file_path)
     loaded_objects.sort(key=lambda ele: ele.get_name())
-    # sample materials for each object
-    _SceneNetLoader.random_sample_materials_for_each_obj(loaded_objects, texture_folder, unknown_texture_folder)
-
     # set the category ids for each object
-    _SceneNetLoader.set_category_ids(loaded_objects, label_mapping)
+    _SceneNetCustomLoader.set_category_ids(loaded_objects, label_mapping)
+    
+    # drop certain objects from the scene that we don't want
+    restricted_objects = _SceneNetCustomLoader.cull_objects(loaded_objects)
 
-    for obj in loaded_objects:
+    for obj in restricted_objects:
         obj.set_cp("is_scene_net_obj", True)
 
-    return loaded_objects
+    return restricted_objects
 
+def random_sample_materials_for_each_obj(loaded_objects: List[MeshObject], texture_folder: str, unknown_texture_folder: Optional[str] = None):
+    """
+    Random sample materials for each of the loaded objects
 
-class _SceneNetLoader:
+    Based on the name the textures from the texture_folder will be selected
+
+    :param loaded_objects: objects loaded from the .obj file
+    :param texture_folder: The path to the texture folder used to sample the textures.
+    :param unknown_texture_folder: The path to the textures, which are used if the the texture type is unknown.
+    """
+    
+    if unknown_texture_folder is None:
+        unknown_texture_folder = os.path.join(texture_folder, "unknown")
+    
+    _SceneNetCustomLoader.random_sample_materials_for_each_obj(loaded_objects, texture_folder, unknown_texture_folder)
+
+class _SceneNetCustomLoader:    
 
     @staticmethod
     def random_sample_materials_for_each_obj(loaded_objects: List[MeshObject], texture_folder: str,
@@ -153,3 +161,48 @@ class _SceneNetLoader:
                 obj.set_name("floor")
             elif obj.get_cp("category_id") == label_mapping.id_from_label("ceiling"):
                 obj.set_name("ceiling")
+
+
+    @staticmethod
+    def cull_objects(loaded_objects: List[MeshObject]) -> List[MeshObject]:
+        """Culls objects depending on their category.
+
+        :param loaded_objects: The list of loaded objects to be culled.
+        :type loaded_objects: List[MeshObject]
+        :return: The list of loaded objects without the objects that were culled.
+        :rtype: List[MeshObject]
+        """
+        
+        culled_categories = [
+            5 # chair
+            6 # sofa
+            7 # table
+            10 # bookshelf
+            14 # desk
+            15 # shelves
+            17 # dresser
+            20 # floor_mat
+            23 # books
+            24 # refridgerator
+            25 # television
+            26 # paper
+            27 # towel
+            29 # box
+            31 # person
+            37 # bag
+            38 # otherstructure
+            39 # otherfurniture
+            40 # otherprop
+        ]
+        
+        new_objs = []
+        
+        for obj in loaded_objects:
+            category_id = obj.get_cp("category_id")
+            
+            if category_id in culled_categories:
+                continue
+            
+            new_objs.append(obj)
+        
+        return new_objs  
