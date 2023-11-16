@@ -9,7 +9,7 @@ import bpy
 def add_dynamic_sky(brightness: int=2, sky_colour: (float,float,float,float) = (0.434,0.838,1,1),
                     horizon_colour: (float,float,float,float) = (0.962,0.822,0.822,1)):
     
-    addon_utils.enable("Lighting: Dynamic Sky")
+    addon_utils.enable("lighting_dynamic_sky")
     
     bpy.ops.sky.dyn()
     
