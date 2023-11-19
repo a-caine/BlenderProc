@@ -111,3 +111,31 @@ class Front3DPointInRoomSampler:
 
         raise RuntimeError("Cannot sample any point inside the loaded front3d rooms.")
         
+    def sample_point(self, floor_obj: MeshObject, height: float, max_tries: int = 1000) -> np.ndarray:
+        """ Samples a point inside one of the loaded Front3d rooms.
+
+        The points are uniformly sampled along x/y over all rooms.
+        The z-coordinate is set based on the given height value.
+
+        :param height: The height above the floor to use for the z-component of the point.
+        :param max_tries: The maximum number of times sampling above the floor should be tried.
+        :return: The sampled point.
+        """
+        for _ in range(max_tries):
+            # Get min/max along x/y-axis from bounding box of room
+            bounding_box = floor_obj.get_bound_box()
+            min_corner = np.min(bounding_box, axis=0)
+            max_corner = np.max(bounding_box, axis=0)
+
+            # Sample uniformly inside bounding box
+            point = np.array([
+                random.uniform(min_corner[0], max_corner[0]),
+                random.uniform(min_corner[1], max_corner[1]),
+                floor_obj.get_location()[2] + height
+            ])
+
+            # Check if sampled pose is above the floor to make sure its really inside the room
+            if floor_obj.position_is_above_object(point):
+                return point
+
+        raise RuntimeError("Cannot sample any point inside the loaded front3d rooms.")
